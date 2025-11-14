@@ -1,6 +1,3 @@
-from http.client import responses
-
-import requests
 import spotipy
 from spotipy import SpotifyOAuth, SpotifyException
 
@@ -42,11 +39,3 @@ class SpotifyExtractor:
             offset += limit
 
         return all_songs
-
-    def get_extract_from_song_id(self, song_id: str):
-        track = self.__sp.track(song_id)
-        preview_url = track['preview_url']
-        if preview_url:
-            response = requests.get(preview_url)
-            with open(f'data/tracks/{track['name']}', 'wb') as f:
-                f.write(response.content)
