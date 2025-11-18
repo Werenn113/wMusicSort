@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from tensorflow.keras.callbacks import Callback
 
-class LossGraph(Callback):
+class LossGraph:
     def __init__(self, epochs: int, refresh_rate=50, show_graph=False):
         super().__init__()
         self.__losses = []
@@ -29,22 +28,18 @@ class LossGraph(Callback):
         self.__fig.canvas.draw()
 
     def on_batch_end(self, batch, logs=None) -> None:
-        loss = logs.get("loss")
+        loss = logs["loss"]
         self.__losses.append(loss)
 
         if batch % self.__refresh_rate != 0:
             return
 
         if self.__show_graph:
-            # Mise à jour du texte
             self.__text.set_text(f"Loss actuelle : {loss:.4f}")
-
-            # Mise à jour de la courbe
             self.__line.set_data(np.arange(len(self.__losses)), self.__losses)
             self.__ax.relim()
             self.__ax.autoscale_view()
 
-            # Blitting = super rapide
             self.__fig.canvas.restore_region(self.__bg)
             self.__ax.draw_artist(self.__line)
             self.__ax.draw_artist(self.__text)
@@ -52,7 +47,6 @@ class LossGraph(Callback):
             self.__fig.canvas.flush_events()
 
     def on_train_end(self, logs=None):
-        # Sauvegarde propre du graph final
         plt.ioff()
         plt.figure(figsize=(10, 5))
         plt.plot(np.arange(len(self.__losses)), self.__losses, label="Loss", color="blue")

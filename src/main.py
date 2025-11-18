@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 
 from src.classifier.Classifier import Classifier
+# from src.classifier.Classifier import Classifier
 from src.classifier.DataLoader import DataLoader
 from src.interface.GUI import GUI
 
@@ -17,7 +18,7 @@ if __name__ == "__main__":
     # app.mainloop()
 
     data_loader = DataLoader("src/classifier/data/dataset.csv")
-    classifier = Classifier(data_loader.X, data_loader.y, epochs=10, batch_size=32)
+    classifier = Classifier(data_loader.X, data_loader.y, epochs=2000, batch_size=32)
     classifier.train()
     classifier.test()
 
