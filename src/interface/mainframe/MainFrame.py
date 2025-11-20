@@ -9,6 +9,7 @@ class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, spotify: SpotifyExtractor, **kwargs):
         super().__init__(master, **kwargs)
         self.__spotify: SpotifyExtractor = spotify
+        self.__spotify.authentication()
 
         self.__create_widgets()
         self.grid_rowconfigure(0, weight=1)  # Ajuste la hauteur en fonction de l'espace disponible

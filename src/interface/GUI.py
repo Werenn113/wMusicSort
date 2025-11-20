@@ -1,16 +1,42 @@
+import json
+import os
+
 import customtkinter
+from networkx.algorithms.components import is_connected
+
+from src.LastFMExtractor import LastFMExtractor
 from src.SpotifyExtractor import SpotifyExtractor
 from src.interface.LoginFrame import LoginFrame
 from src.interface.mainframe.MainFrame import MainFrame
+
+
+def is_already_connected():
+    if not os.path.exists('.cache'):
+        return False
+
+    with open('.cache', 'r') as f:
+        data = json.load(f)
+
+    if 'access_token' in data:
+        return True
+    else:
+        return False
 
 
 class GUI(customtkinter.CTk):
     # Fenêtre principale de l'application : initialise Spotify, l'UI et affiche le login.
     def __init__(self) -> None:
         super().__init__()
+
         self.__spotify = SpotifyExtractor()  # instance pour interagir avec Spotify
+        self.__lastfm = LastFMExtractor(os.getenv('LAST_FM_API_KEY'))
+
         self.__setup_ui()  # configuration de la fenêtre
-        self.__show_login_frame()  # afficher l'écran de connexion
+
+        if is_already_connected():
+            self.__show_main_frame()
+        else:
+            self.__show_login_frame()
 
     def __setup_ui(self) -> None:
         # Configuration basique de la fenêtre (taille, thème, layout)
@@ -36,8 +62,8 @@ class GUI(customtkinter.CTk):
         self.login_frame.grid(row=0, column=0, padx=20, pady=50, sticky="")
 
     def __show_main_frame(self) -> None:
-        # Supprime l'écran de login et affiche le MainFrame principal.
-        self.login_frame.destroy()
+        if hasattr(self, 'login_frame') and self.login_frame.winfo_exists():
+            self.login_frame.destroy()
 
         self.main_frame = MainFrame(
             master=self,

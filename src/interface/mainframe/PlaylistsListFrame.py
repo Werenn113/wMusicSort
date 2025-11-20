@@ -1,5 +1,4 @@
 from collections.abc import Callable
-
 import customtkinter
 from src.SpotifyExtractor import SpotifyExtractor
 
