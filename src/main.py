@@ -1,9 +1,6 @@
 import os
 from dotenv import load_dotenv
-
-from src.LastFMExtractor import LastFMExtractor
 from src.interface.GUI import GUI
-
 
 load_dotenv()
 
@@ -19,6 +16,4 @@ if __name__ == "__main__":
     # classifier = Classifier(data_loader.X, data_loader.y, epochs=2000, batch_size=32)
     # classifier.train()
     # classifier.test()
-
-    lastfm_extractor = LastFMExtractor(os.getenv('LAST_FM_API_KEY'))
 

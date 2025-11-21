@@ -12,4 +12,13 @@ class Tag:
 class Song:
     name: str
     artist: str
+    isrc: str
     genre: Optional[str] = None
+
+
+@dataclass
+class Playlist:
+    id: str
+    name: str
+    owner_id: str
+    number_of_track: int
