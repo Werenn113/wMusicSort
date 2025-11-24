@@ -1,7 +1,13 @@
+import math
 from typing import Optional
 import spotipy
 from spotipy import SpotifyOAuth, Spotify
 from src.types.Types import Song, Playlist
+
+
+def convert_time(time: int) -> str:
+    seconds, minutes = math.modf(time / 60000)
+    return f"{int(minutes)}:{int(seconds*60)}"
 
 
 class SpotifyClient:
@@ -88,6 +94,7 @@ class SpotifyClient:
                     Song(
                         name=song['track']['name'],
                         artist=song['track']['artists'][0]['name'],
+                        duree=convert_time(song['track']['duration_ms']),
                         isrc=song['track']['external_ids']['isrc']
                     )
                 )

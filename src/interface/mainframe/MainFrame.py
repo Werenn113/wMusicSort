@@ -1,7 +1,7 @@
 import os
-import customtkinter
-# Plus besoin de threading ni de time ici !
+from typing import Optional
 
+import customtkinter
 from src.Clients.MusicBrainzClient import MusicBrainzClient
 from src.Clients.SpotifyClient import SpotifyClient
 from src.interface.mainframe.PlaylistsListFrame import PlaylistsListFrame
@@ -11,12 +11,31 @@ from src.types.Types import Playlist
 
 
 class MainFrame(customtkinter.CTkFrame):
-    def __init__(self, master: customtkinter.CTk, spotify: SpotifyClient, music_brainz: MusicBrainzClient, **kwargs) -> None:
-        super().__init__(master, **kwargs)
-        self.__spotify: SpotifyClient = spotify
-        self.__music_brainz = music_brainz
+    """
+    Frame principale de l'application (affichages des playlists, des musiques et de leurs genres)
 
-        self.__spotify.authentication(
+    Attributes:
+        __spotify (SpotifyClient) : client spotify
+        __music_brainz (MusicBrainzClient) : client musicbrainz
+        __songs_list_frame (customtkinter.CTkFrame) : frame qui gère l'affichage des musiques
+    """
+
+    def __init__(self, master: customtkinter.CTk, spotify: SpotifyClient, music_brainz: MusicBrainzClient, **kwargs) -> None:
+        """
+        Initialise une instance de MainFrame
+
+        Args:
+            master (customtkinter.CTk) : fenêtre dans laquelle est affichée cette frame
+            spotify (SpotifyClient) : client spotify
+            music_brainz (MusicBrainzClient) : client musicbrainz
+            **kwargs : autres arguments
+        """
+        super().__init__(master, **kwargs)
+        self.__spotify = spotify
+        self.__music_brainz = music_brainz
+        self.__songs_list_frame: Optional[SongsListFrame] = None
+
+        self.__spotify.authentication( # TODO : n'a pas de sens
             client_id=os.getenv('SPOTIFY_CLIENT_ID'),
             client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
             redirect_uri=os.getenv('SPOTIFY_REDIRECT_URI')
@@ -27,13 +46,14 @@ class MainFrame(customtkinter.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=0)
 
-        self.__songs_list_frame = None
-
-        self.__create_sidebar()
+        self.__create_sidemenu()
         self.__create_analysis_bar()
 
 
-    def __create_sidebar(self) -> None:
+    def __create_sidemenu(self) -> None:
+        """
+        Crée le menu de gauche permettant l'affichage des playlists
+        """
         self.__playlists_list_frame = PlaylistsListFrame(
             master=self,
             width=200,
@@ -45,7 +65,15 @@ class MainFrame(customtkinter.CTkFrame):
 
 
     def __handle_playlist_selection(self, playlist: Playlist) -> None:
-        if self.__songs_list_frame is not None:
+        """
+        Gère la sélection d'une playlist
+
+        Args:
+            playlist (Playlist) : la playlist sélectionnée
+        """
+        self.__analysis_frame.stop_analysis()
+
+        if hasattr(self, "__songs_list_frame") and self.__songs_list_frame.winfo_exists():
             self.__songs_list_frame.destroy()
 
         self.__songs_list_frame = SongsListFrame(
@@ -58,21 +86,16 @@ class MainFrame(customtkinter.CTkFrame):
             playlist=playlist
         )
         self.__songs_list_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
-        self.__analysis_frame.set_song_list_frame(self.__songs_list_frame)
+        self.__analysis_frame.song_list_frame = self.__songs_list_frame
 
 
     def __create_analysis_bar(self) -> None:
+        """
+        Affiche la bare de progression et le bouton pour l'analyse des genres
+        """
         self.__analysis_frame = AnalysisFrame(
             master=self,
-            on_analysis_finished=self.__handle_analysis_finished,  # <--- LE LIEN IMPORTANT
             corner_radius=0,
             music_brainz=self.__music_brainz,
         )
         self.__analysis_frame.grid(row=1, column=1, sticky="ew")
-
-
-    def __handle_analysis_finished(self):
-        """Cette fonction est appelée automatiquement quand AnalysisFrame a fini le travail"""
-        print("MainFrame: Analyse terminée, activation des boutons.")
-        if self.__songs_list_frame:
-            self.__songs_list_frame.enable_reveal_buttons()

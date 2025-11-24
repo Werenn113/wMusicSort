@@ -5,19 +5,38 @@ from src.types.Types import Playlist, Song
 
 
 class SongsListFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self, master, spotify: SpotifyClient, music_brainz: MusicBrainzClient, playlist: Playlist, **kwargs):
+    """
+    Frame affichant la liste des musiques d'une playlist
+
+    Attributes:
+        __spotify (SpotifyClient) : client spotify
+        __music_brainz (MusicBrainzClient) : client musicbrainz
+        __playlist (Playlist) : la playlist à afficher
+        __songs (list[Song]) : la liste des musiques de la playlist
+        __genre_labels (list[customtkinter.CTkLabel]) : liste des boutons pour pouvoir les activer lorsque l'analyse est fini
+    """
+    def __init__(self, master: customtkinter.CTkFrame, spotify: SpotifyClient, music_brainz: MusicBrainzClient, playlist: Playlist, **kwargs) -> None:
+        """
+        Initialise une instance de SongsListFrame
+
+        Args:
+            master (customtkinter.CTkFrame) : frame qui affiche cette frame (MainFrame)
+            spotify (SpotifyClient) : client spotify
+            music_brainz (MusicBrainzClient) : client musicbrainz
+            playlist (Playlist) : la playlist
+            **kwargs : autres arguments
+        """
         super().__init__(master, **kwargs)
         self.__spotify = spotify
         self.__music_brainz = music_brainz
         self.__playlist = playlist
-        self.__songs = self.__spotify.get_song_from_playlist(playlist=self.__playlist)
-        self.__genre_buttons = []
+        self.__songs: list[Song] = self.__spotify.get_song_from_playlist(playlist=self.__playlist)
+        self.__genre_labels: list[customtkinter.CTkLabel] = []
 
-        # Configuration colonnes
-        self.grid_columnconfigure(0, weight=3)  # Titre
-        self.grid_columnconfigure(1, weight=2)  # Artiste
-        self.grid_columnconfigure(2, weight=1)  # Durée (Todo)
-        self.grid_columnconfigure(3, weight=2)  # Genre (Bouton)
+        self.grid_columnconfigure(index=0, weight=3)  # Titre
+        self.grid_columnconfigure(index=1, weight=2)  # Artiste
+        self.grid_columnconfigure(index=2, weight=1)  # Durée
+        self.grid_columnconfigure(index=3, weight=2)  # Genre
 
         self.__create_header()
         self.__populate_songs()
@@ -28,8 +47,11 @@ class SongsListFrame(customtkinter.CTkScrollableFrame):
         return self.__songs
 
 
-    def __create_header(self):
-        headers = ["TITRE", "ARTISTE", "DURÉE", "GENRE"]
+    def __create_header(self) -> None:
+        """
+        Crée les headers du tableau
+        """
+        headers = ["#", "TITRE", "ARTISTE", "DURÉE", "GENRE"]
         for i, h in enumerate(headers):
             customtkinter.CTkLabel(
                 master=self,
@@ -40,10 +62,20 @@ class SongsListFrame(customtkinter.CTkScrollableFrame):
             ).grid(row=0, column=i, sticky="ew", pady=(0, 10), padx=5)
 
 
-    def __populate_songs(self):
-        row = 0
-        for song in self.__songs:
-            row += 1
+    def __populate_songs(self) -> None:
+        """
+        Rempli le tableau avec les données des musiques
+        """
+        for i in range(1, len(self.__songs)):
+            song = self.__songs[i-1]
+
+            # Numéro
+            customtkinter.CTkLabel(
+                master=self,
+                text=str(i),
+                font=("Arial", 13, "bold"),
+                anchor="w"
+            ).grid(row=i, column=0, sticky="ew", pady=5, padx=5)
 
             # Titre
             customtkinter.CTkLabel(
@@ -51,57 +83,40 @@ class SongsListFrame(customtkinter.CTkScrollableFrame):
                 text=song.name,
                 font=("Arial", 13, "bold"),
                 anchor="w"
-            ).grid(row=row, column=0, sticky="ew", pady=5, padx=5)
+            ).grid(row=i, column=1, sticky="ew", pady=5, padx=5)
 
             # Artiste
             customtkinter.CTkLabel(
                 master=self,
                 text=song.artist,
                 anchor="w"
-            ).grid(row=row, column=1, sticky="ew", pady=5, padx=5)
+            ).grid(row=i, column=2, sticky="ew", pady=5, padx=5)
 
-            # Durée (Todo)
+            # Durée
             customtkinter.CTkLabel(
                 master=self,
-                text="--:--",
+                text=song.duree,
                 text_color="gray",
                 anchor="w"
-            ).grid(row=row, column=2, sticky="ew", pady=5, padx=5)
+            ).grid(row=i, column=3, sticky="ew", pady=5, padx=5)
 
-            # Bouton Genre
-            btn_reveal = customtkinter.CTkButton(
+            # Label Genre
+            genre_label = customtkinter.CTkLabel(
                 master=self,
                 text="?",
-                width=60,
-                height=24,
-                fg_color="#333333",
-                hover_color="#444444",
-                state="disabled"
+                text_color="gray50",
+                anchor="w"
             )
+            genre_label.grid(row=i, column=4, sticky="w", pady=5, padx=5)
+            self.__genre_labels.append(genre_label)
 
-            # --- CORRECTION CRUCIALE ---
-            # On passe 'song' (l'objet) et pas 'song.genre' (qui est vide pour l'instant)
-            btn_reveal.configure(command=lambda b=btn_reveal, s=song: self.__reveal_genre(b, s))
 
-            btn_reveal.grid(row=row, column=3, sticky="w", pady=5, padx=5)
-            self.__genre_buttons.append(btn_reveal)
+    def update_song_genre(self, index: int) -> None:
+        """
+        Update le genre d'une musique dans le tableau __genre_labels
 
-    def __reveal_genre(self, btn, song_object):
-        """Affiche le genre stocké dans l'objet song"""
-        # On récupère le genre maintenant (après le calcul)
-        genre_text = song_object.genre
-
-        if not genre_text:
-            genre_text = "Inconnu"
-
-        btn.configure(
-            text=genre_text,
-            fg_color="transparent",
-            state="disabled",
-            text_color="#1DB954",
-            width=60
-        )
-
-    def enable_reveal_buttons(self):
-        for btn in self.__genre_buttons:
-            btn.configure(state="normal", text="Révéler", fg_color="#6A0DAD")
+        Args:
+            index (int) : l'index de la musique dans le tableau __genre_labels
+        """
+        if 0 <= index < len(self.__genre_labels):
+            self.__genre_labels[index].configure(text=self.__songs[index].genre, text_color='#1DB954')

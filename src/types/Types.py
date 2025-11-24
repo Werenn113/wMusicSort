@@ -12,6 +12,7 @@ class Tag:
 class Song:
     name: str
     artist: str
+    duree: str
     isrc: str
     genre: Optional[str] = None
 

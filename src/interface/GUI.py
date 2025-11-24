@@ -1,7 +1,6 @@
 import json
 import os
 import customtkinter
-from src.Clients.LastFMClient import LastFMClient
 from src.Clients.MusicBrainzClient import MusicBrainzClient
 from src.Clients.SpotifyClient import SpotifyClient
 from src.interface.LoginFrame import LoginFrame
@@ -87,8 +86,8 @@ class GUI(customtkinter.CTk):
         """
         Crée et place le MainFrame
         """
-        if hasattr(self, 'login_frame') and self.login_frame.winfo_exists(): # détruit le login frame s'il existe TODO : améliorer
-            self.login_frame.destroy()
+        if hasattr(self, '__login_frame') and self.__login_frame.winfo_exists(): # détruit le login frame s'il existe TODO : améliorer
+            self.__login_frame.destroy()
 
         self.__main_frame = MainFrame(
             master=self,
