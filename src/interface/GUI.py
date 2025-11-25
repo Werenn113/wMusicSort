@@ -1,8 +1,9 @@
 import json
 import os
+from typing import Optional
 import customtkinter
-from src.Clients.MusicBrainzClient import MusicBrainzClient
-from src.Clients.SpotifyClient import SpotifyClient
+from src.clients.MusicBrainzClient import MusicBrainzClient
+from src.clients.SpotifyClient import SpotifyClient
 from src.interface.LoginFrame import LoginFrame
 from src.interface.mainframe.MainFrame import MainFrame
 
@@ -32,7 +33,9 @@ class GUI(customtkinter.CTk):
 
     Attributes:
         __spotify (SpotifyClient) : client spotify
-        __music_brainz (LastFMClient) : client musicbrainz
+        __music_brainz (MusicBrainzClient) : client musicbrainz
+        __login_frame (Optional[LoginFrame]) : frame de connexion
+        __main_frame (Optional[MainFrame]) : frame principale
     """
 
     def __init__(self) -> None:
@@ -41,8 +44,11 @@ class GUI(customtkinter.CTk):
         """
         super().__init__()
 
-        self.__spotify = SpotifyClient()
-        self.__music_brainz = MusicBrainzClient()
+        self.__spotify: SpotifyClient = SpotifyClient()
+        self.__music_brainz: MusicBrainzClient = MusicBrainzClient()
+
+        self.__login_frame: Optional[LoginFrame] = None
+        self.__main_frame: Optional[MainFrame] = None
 
         self.__setup_ui()
 
@@ -86,12 +92,12 @@ class GUI(customtkinter.CTk):
         """
         Crée et place le MainFrame
         """
-        if hasattr(self, '__login_frame') and self.__login_frame.winfo_exists(): # détruit le login frame s'il existe TODO : améliorer
+        if self.__login_frame is not None: # détruit le login frame s'il existe
             self.__login_frame.destroy()
+            self.__login_frame = None
 
-        self.__main_frame = MainFrame(
+        MainFrame(
             master=self,
             spotify=self.__spotify,
             music_brainz=self.__music_brainz
-        )
-        self.__main_frame.grid(row=0, column=0, sticky="nsew")
+        ).grid(row=0, column=0, sticky="nsew")

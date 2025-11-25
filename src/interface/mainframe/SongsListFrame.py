@@ -1,6 +1,6 @@
 import customtkinter
-from src.Clients.SpotifyClient import SpotifyClient
-from src.Clients.MusicBrainzClient import MusicBrainzClient
+from src.clients.SpotifyClient import SpotifyClient
+from src.clients.MusicBrainzClient import MusicBrainzClient
 from src.types.Types import Playlist, Song
 
 

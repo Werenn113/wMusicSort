@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Callable
 import customtkinter
-from src.Clients.SpotifyClient import SpotifyClient
+from src.clients.SpotifyClient import SpotifyClient
 from src.types.Types import Playlist
 
 
@@ -50,7 +50,7 @@ class PlaylistsListFrame(customtkinter.CTkScrollableFrame):
         Args:
             playlist (Playlist) : la playlist
         """
-        button = customtkinter.CTkButton(
+        customtkinter.CTkButton(
             master=self,
             text=playlist.name,
             fg_color="transparent",
@@ -58,5 +58,4 @@ class PlaylistsListFrame(customtkinter.CTkScrollableFrame):
             hover_color=("gray70", "gray25"),
             anchor = "w",
             command=partial(self.__on_select_callback, playlist)
-        )
-        button.pack(fill="x", pady=2, padx=5)
+        ).pack(fill="x", pady=2, padx=5)

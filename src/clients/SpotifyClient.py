@@ -6,6 +6,15 @@ from src.types.Types import Song, Playlist
 
 
 def convert_time(time: int) -> str:
+    """
+    Converti un temps en ms en format : mm:ss
+
+    Args:
+        time (int) : la durée à convertir
+
+    Returns:
+        str : la durée converti format mm:ss
+    """
     seconds, minutes = math.modf(time / 60000)
     return f"{int(minutes)}:{int(seconds*60)}"
 
@@ -36,14 +45,16 @@ class SpotifyClient:
             client_secret (str) : secret du client (fourni par spotify)
             redirect_uri (str) : lien de redirection (à définir dans spotify)
         """
-        self.__spotify = spotipy.Spotify(
-            auth_manager=SpotifyOAuth(
-                client_id=client_id,
-                client_secret=client_secret,
-                redirect_uri=redirect_uri,
-                scope=self.__scope
-            )
+        auth_manager = SpotifyOAuth(
+            client_id=client_id,
+            client_secret=client_secret,
+            redirect_uri=redirect_uri,
+            scope=self.__scope
         )
+        auth_manager.get_access_token()
+
+        self.__spotify = spotipy.Spotify(auth_manager=auth_manager)
+
 
 
     def get_user_id(self) -> str:

@@ -2,7 +2,7 @@ import time
 from typing import Optional
 import customtkinter
 import threading
-from src.Clients.MusicBrainzClient import MusicBrainzClient
+from src.clients.MusicBrainzClient import MusicBrainzClient
 from src.interface.mainframe.SongsListFrame import SongsListFrame
 from src.types.Types import Song
 
@@ -28,9 +28,13 @@ class AnalysisFrame(customtkinter.CTkFrame):
         """
         super().__init__(master, **kwargs)
         self.__music_brainz = music_brainz
-        self.__song_list_frame: Optional[SongsListFrame] = None
         self.__abort_analysis = False
+        self.__song_list_frame: Optional[SongsListFrame] = None
         self.__analysis_thread: Optional[threading.Thread] = None
+        self.__button_start: Optional[customtkinter.CTkButton] = None
+        self.__progress_bar: Optional[customtkinter.CTkProgressBar] = None
+        self.__status_label: Optional[customtkinter.CTkLabel] = None
+        self.__time_average: int = 0
 
         self.configure(height=80, fg_color="#1a1a1a")
         self.grid_columnconfigure(index=0, weight=0)
@@ -116,7 +120,7 @@ class AnalysisFrame(customtkinter.CTkFrame):
         """
         Bouton en plus pour plus tart
         """
-        self.__button_stop = customtkinter.CTkButton(
+        customtkinter.CTkButton(
             master=self,
             text="Stop",
             # command=self.stop_analysis,
@@ -124,8 +128,7 @@ class AnalysisFrame(customtkinter.CTkFrame):
             fg_color="gray",  # Gris par défaut car inactif
             hover_color="#cf3838",  # Rouge au survol
             state="disabled"
-        )
-        self.__button_stop.grid(row=0, column=2, rowspan=2, padx=20, pady=10)
+        ).grid(row=0, column=2, rowspan=2, padx=20, pady=10)
 
 
     def __start_analysis_process(self) -> None:

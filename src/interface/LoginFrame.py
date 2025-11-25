@@ -1,8 +1,8 @@
 import os
 from threading import Thread
-from typing import Callable
+from typing import Callable, Optional
 import customtkinter
-from src.Clients.SpotifyClient import SpotifyClient
+from src.clients.SpotifyClient import SpotifyClient
 
 
 class LoginFrame(customtkinter.CTkFrame):
@@ -12,6 +12,9 @@ class LoginFrame(customtkinter.CTkFrame):
     Attributes:
         __spotify (SpotifyClient) : client spotify
         __on_login_success_callback (Callable[[], None]) : callback vers la fonction pour afficher la page suivante (mainframe)
+        __client_id_entry: Optional[customtkinter.CTkEntry] : entrée pour le client id
+        __client_secret_entry: Optional[customtkinter.CTkEntry] : entrée pour le client secret
+        __redirect_uri_entry: Optional[customtkinter.CTkEntry] : entrée pour le uri de redirection
     """
 
     def __init__(self, master: customtkinter.CTk, spotify: SpotifyClient, on_login_success_callback: Callable[[], None], **kwargs) -> None:
@@ -28,6 +31,10 @@ class LoginFrame(customtkinter.CTkFrame):
         self.__spotify: SpotifyClient = spotify
         self.__on_login_success_callback = on_login_success_callback
 
+        self.__client_id_entry: Optional[customtkinter.CTkEntry] = None
+        self.__client_secret_entry: Optional[customtkinter.CTkEntry] = None
+        self.__redirect_uri_entry: Optional[customtkinter.CTkEntry] = None
+
         self.__create_login_form()
 
 
@@ -36,12 +43,11 @@ class LoginFrame(customtkinter.CTkFrame):
         Crée tous les éléments du login form
         """
         # Logo
-        self.__logo = customtkinter.CTkLabel(
+        customtkinter.CTkLabel(
             master=self,
             text='👤',
             font=('Arial', 100)
-        )
-        self.__logo.grid(row=0, column=0, pady=(30, 20), padx=20)
+        ).grid(row=0, column=0, pady=(30, 20), padx=20)
 
         # Champ de saisie du client_id (récupéré depuis les variables d'environnement)
         self.__client_id_entry = customtkinter.CTkEntry(
@@ -80,7 +86,7 @@ class LoginFrame(customtkinter.CTkFrame):
         self.__redirect_uri_entry.insert(0, os.getenv('SPOTIFY_REDIRECT_URI'))
 
         # Bouton de connexion
-        self.__login_button = customtkinter.CTkButton(
+        customtkinter.CTkButton(
             master=self,
             text="Login",
             width=200,
@@ -89,8 +95,7 @@ class LoginFrame(customtkinter.CTkFrame):
             font=('Arial', 16, 'bold'),
             command=self.__login_event,
             hover_color="#037bfc"
-        )
-        self.__login_button.grid(row=4, column=0, pady=(20, 30), padx=20)
+        ).grid(row=4, column=0, pady=(20, 30), padx=20)
 
 
     def __login_event(self) -> None:

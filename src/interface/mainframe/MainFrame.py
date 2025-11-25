@@ -2,8 +2,8 @@ import os
 from typing import Optional
 
 import customtkinter
-from src.Clients.MusicBrainzClient import MusicBrainzClient
-from src.Clients.SpotifyClient import SpotifyClient
+from src.clients.MusicBrainzClient import MusicBrainzClient
+from src.clients.SpotifyClient import SpotifyClient
 from src.interface.mainframe.PlaylistsListFrame import PlaylistsListFrame
 from src.interface.mainframe.SongsListFrame import SongsListFrame
 from src.interface.mainframe.AnalysisFrame import AnalysisFrame
@@ -17,7 +17,8 @@ class MainFrame(customtkinter.CTkFrame):
     Attributes:
         __spotify (SpotifyClient) : client spotify
         __music_brainz (MusicBrainzClient) : client musicbrainz
-        __songs_list_frame (customtkinter.CTkFrame) : frame qui gère l'affichage des musiques
+        __songs_list_frame (Optional[customtkinter.CTkFrame]) : frame qui gère l'affichage des musiques
+        __analysis_frame (Optional[AnalysisFrame]) : frame gérant l'analyse
     """
 
     def __init__(self, master: customtkinter.CTk, spotify: SpotifyClient, music_brainz: MusicBrainzClient, **kwargs) -> None:
@@ -34,6 +35,7 @@ class MainFrame(customtkinter.CTkFrame):
         self.__spotify = spotify
         self.__music_brainz = music_brainz
         self.__songs_list_frame: Optional[SongsListFrame] = None
+        self.__analysis_frame: Optional[AnalysisFrame] = None
 
         self.__spotify.authentication( # TODO : n'a pas de sens
             client_id=os.getenv('SPOTIFY_CLIENT_ID'),
@@ -54,14 +56,13 @@ class MainFrame(customtkinter.CTkFrame):
         """
         Crée le menu de gauche permettant l'affichage des playlists
         """
-        self.__playlists_list_frame = PlaylistsListFrame(
+        PlaylistsListFrame(
             master=self,
             width=200,
             corner_radius=0,
             spotify=self.__spotify,
             on_select=self.__handle_playlist_selection
-        )
-        self.__playlists_list_frame.grid(row=0, column=0, rowspan=2, sticky="nsew")
+        ).grid(row=0, column=0, rowspan=2, sticky="nsew")
 
 
     def __handle_playlist_selection(self, playlist: Playlist) -> None:
@@ -72,9 +73,6 @@ class MainFrame(customtkinter.CTkFrame):
             playlist (Playlist) : la playlist sélectionnée
         """
         self.__analysis_frame.stop_analysis()
-
-        if hasattr(self, "__songs_list_frame") and self.__songs_list_frame.winfo_exists():
-            self.__songs_list_frame.destroy()
 
         self.__songs_list_frame = SongsListFrame(
             master=self,
